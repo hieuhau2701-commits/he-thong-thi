@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/kiemtra/', // Tên này phải trùng với tên Repository bạn sẽ tạo trên GitHub
+  base: '/he-thong-thi/', // <--- BẮT BUỘC phải có dòng này để định nghĩa đường dẫn
 })

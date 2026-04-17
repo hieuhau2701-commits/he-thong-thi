@@ -1,20 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
+import { getAnalytics } from "firebase/analytics";
 import { 
-  getAuth, onAuthStateChanged,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
-  sendEmailVerification
+  getAuth, onAuthStateChanged, 
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, 
+  sendEmailVerification 
 } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { 
   CheckCircle2, XCircle, UserCircle, GraduationCap, 
   PlusCircle, Save, ArrowLeft, BookOpen, PlayCircle, 
-  AlertCircle, Trash2, Loader2, Mail, Lock, LogIn, UserPlus,
-  Download, Upload, Image as ImageIcon, X,
-  BarChart2, Eye, Users, Calendar, FileText
+  AlertCircle, Trash2, Loader2, Mail, Lock, LogIn, UserPlus, 
+  Download, Upload, Image as ImageIcon, X, 
+  BarChart2, Eye, Users, Calendar, FileText 
 } from 'lucide-react';
 
-// --- TIỆN ÍCH XỬ LÝ HÌNH ẢNH MẠNH MẼ ---
+// === BƯỚC 1: CẤU HÌNH FIREBASE ===
+// (Lưu ý: Bạn phải lấy các thông số thật từ trang Firebase Console thay vào các chữ YOUR_...)
+const firebaseConfig = {
+  apiKey: "AIzaSyAqJzVPjstw570AfjzhTL9V-wBgrffqTAk",
+  authDomain: "hieu-abfde.firebaseapp.com",
+  projectId: "hieu-abfde",
+  storageBucket: "hieu-abfde.firebasestorage.app",
+  messagingSenderId: "643223090105",
+  appId: "1:643223090105:web:39e8f00d1af0aae1e03c68",
+  measurementId: "G-MW9E8PKL21"
+};
+// === BƯỚC 2: KHỞI TẠO CÁC DỊCH VỤ ===
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const analytics = getAnalytics(app); // Google Analytics đã sẵn sàng chạy!
+
 const compressImage = (file) => {
   return new Promise((resolve, reject) => {
     if (!file) {
