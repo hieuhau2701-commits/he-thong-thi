@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from 'firebase/app';
 import { 
   getAuth, onAuthStateChanged,
@@ -14,7 +13,7 @@ import {
   Download, Upload, Image as ImageIcon, X,
   BarChart2, Eye, Users, Calendar, FileText
 } from 'lucide-react';
-const analytics = getAnalytics(app);
+
 // --- TIỆN ÍCH XỬ LÝ HÌNH ẢNH MẠNH MẼ ---
 const compressImage = (file) => {
   return new Promise((resolve, reject) => {
@@ -57,21 +56,34 @@ const compressImage = (file) => {
 
 // --- CẤU HÌNH FIREBASE ---
 // CHÚ Ý: BẠN HÃY DÁN ĐOẠN MÃ FIREBASE CONFIG CỦA BẠN VÀO BÊN TRONG DẤU NGOẶC NHỌN DƯỚI ĐÂY
-const firebaseConfig = {
-  apiKey: "AIzaSyAqJzVPjstw570AfjzhTL9V-wBgrffqTAk",
-  authDomain: "hieu-abfde.firebaseapp.com",
-  projectId: "hieu-abfde",
-  storageBucket: "hieu-abfde.firebasestorage.app",
-  messagingSenderId: "643223090105",
-  appId: "1:643223090105:web:39e8f00d1af0aae1e03c68",
-  measurementId: "G-MW9E8PKL21"
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+  // Bỏ các dấu // đi và điền mã thật của bạn vào nhé:
+  // apiKey: "AIzaSy...",
+  // authDomain: "quiz-system-xxx.firebaseapp.com",
+  // projectId: "quiz-system-xxx",
+  // storageBucket: "quiz-system-xxx.appspot.com",
+  // messagingSenderId: "123456789",
+  // appId: "1:123456789:web:abcdefgh"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-quiz-app';
 
 export default function App() {
+  // --- BỘ HIỆU ỨNG CSS TÙY CHỈNH ---
+  const globalStyles = (
+    <style>{`
+      @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      .animate-fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+      @keyframes popIn { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+      .animate-pop-in { animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+      @keyframes gradientX { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      .animate-gradient-x { background-size: 200% 200%; animation: gradientX 8s ease-in-out infinite; }
+    `}</style>
+  );
+
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -594,267 +606,285 @@ export default function App() {
   // ==========================================
   if (loadingAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center text-blue-600 bg-white p-8 rounded-2xl shadow-sm border border-blue-100">
-          <Loader2 className="animate-spin mb-4" size={48} />
-          <p className="font-semibold text-lg">Đang kết nối hệ thống...</p>
+      <>
+        {globalStyles}
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center animate-gradient-x bg-gradient-to-br from-blue-50 via-white to-blue-100">
+          <div className="flex flex-col items-center text-blue-600 bg-white p-8 rounded-3xl shadow-xl border border-blue-100 animate-pop-in">
+            <Loader2 className="animate-spin mb-4" size={48} />
+            <p className="font-semibold text-lg">Đang kết nối hệ thống...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (currentView === 'auth') {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border-t-4 border-blue-500">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Quiz System</h1>
-            <p className="text-gray-500">
-              {authMode === 'login' ? 'Đăng nhập vào tài khoản của bạn' : 'Đăng ký tài khoản mới'}
-            </p>
-          </div>
-
-          {authError && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 flex items-center gap-2 text-sm border border-red-200">
-              <AlertCircle size={18} className="flex-shrink-0" />
-              <span>{authError}</span>
+      <>
+        {globalStyles}
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-blue-100 animate-gradient-x">
+          <div className="bg-white p-8 sm:p-10 rounded-[2rem] shadow-2xl w-full max-w-md border-t-4 border-blue-500 animate-fade-in-up">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-800 mb-2 tracking-tight">Quiz System</h1>
+              <p className="text-gray-500 font-medium">
+                {authMode === 'login' ? 'Đăng nhập vào tài khoản của bạn' : 'Đăng ký tài khoản mới'}
+              </p>
             </div>
-          )}
 
-          <form onSubmit={handleAuthSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={18} className="text-gray-400" />
-                </div>
-                <input 
-                  type="email" 
-                  required
-                  className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
-                  placeholder="vidu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+            {authError && (
+              <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 flex items-center gap-3 text-sm border border-red-200 animate-pop-in">
+                <AlertCircle size={20} className="flex-shrink-0" />
+                <span className="font-medium">{authError}</span>
               </div>
-            </div>
+            )}
 
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Mật khẩu</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-gray-400" />
-                </div>
-                <input 
-                  type="password" 
-                  required
-                  className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {authMode === 'register' && (
+            <form onSubmit={handleAuthSubmit} className="space-y-5">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Xác nhận mật khẩu</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock size={18} className="text-gray-400" />
+                <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Email</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Mail size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors duration-300" />
+                  </div>
+                  <input 
+                    type="email" 
+                    required
+                    className="w-full pl-12 p-3.5 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 hover:border-gray-300 bg-gray-50/50 focus:bg-white"
+                    placeholder="vidu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Mật khẩu</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors duration-300" />
                   </div>
                   <input 
                     type="password" 
                     required
-                    className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+                    className="w-full pl-12 p-3.5 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 hover:border-gray-300 bg-gray-50/50 focus:bg-white"
                     placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
               </div>
-            )}
 
-            <button 
-              type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 transition-colors mt-2 shadow-md"
-            >
-              {authMode === 'login' ? <><LogIn size={20}/> Đăng Nhập</> : <><UserPlus size={20}/> Tạo Tài Khoản</>}
-            </button>
-          </form>
+              {authMode === 'register' && (
+                <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5 ml-1">Xác nhận mật khẩu</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Lock size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors duration-300" />
+                    </div>
+                    <input 
+                      type="password" 
+                      required
+                      className="w-full pl-12 p-3.5 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 hover:border-gray-300 bg-gray-50/50 focus:bg-white"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
 
-          <div className="mt-6 text-center text-sm">
-            {authMode === 'login' ? (
-              <p className="text-gray-600">
-                Bạn chưa có tài khoản?{' '}
-                <button type="button" onClick={() => {setAuthMode('register'); setAuthError('');}} className="text-blue-600 font-bold hover:underline">
-                  Đăng ký ngay
-                </button>
-              </p>
-            ) : (
-              <p className="text-gray-600">
-                Đã có tài khoản?{' '}
-                <button type="button" onClick={() => {setAuthMode('login'); setAuthError('');}} className="text-blue-600 font-bold hover:underline">
-                  Quay lại đăng nhập
-                </button>
-              </p>
-            )}
+              <button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex justify-center items-center gap-2 transition-all duration-300 mt-6 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0"
+              >
+                {authMode === 'login' ? <><LogIn size={20}/> Đăng Nhập</> : <><UserPlus size={20}/> Tạo Tài Khoản</>}
+              </button>
+            </form>
+
+            <div className="mt-8 text-center text-sm">
+              {authMode === 'login' ? (
+                <p className="text-gray-600">
+                  Bạn chưa có tài khoản?{' '}
+                  <button type="button" onClick={() => {setAuthMode('register'); setAuthError('');}} className="text-blue-600 font-bold hover:text-blue-800 transition-colors">
+                    Đăng ký ngay
+                  </button>
+                </p>
+              ) : (
+                <p className="text-gray-600">
+                  Đã có tài khoản?{' '}
+                  <button type="button" onClick={() => {setAuthMode('login'); setAuthError('');}} className="text-blue-600 font-bold hover:text-blue-800 transition-colors">
+                    Quay lại đăng nhập
+                  </button>
+                </p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (currentView === 'role-selection') {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <h1 className="text-3xl font-bold text-blue-900 mb-2 text-center">Thiết lập tài khoản</h1>
-        <p className="text-gray-600 mb-8">Xin chào <span className="font-bold">{user?.email}</span>. Vui lòng chọn vai trò của bạn.</p>
-        
-        <div className="flex flex-col sm:flex-row gap-6">
-          <button 
-            onClick={() => handleSelectRole('teacher')}
-            className="bg-white p-8 rounded-2xl shadow-lg border-2 border-transparent hover:border-blue-500 transition-all group w-64 flex flex-col items-center"
-          >
-            <div className="bg-blue-100 p-4 rounded-full mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors text-blue-600">
-              <UserCircle size={48} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800">Giảng Viên</h2>
-            <p className="text-sm text-gray-500 mt-2 text-center">Tạo đề thi, soạn câu hỏi và chia sẻ cho sinh viên.</p>
-          </button>
+      <>
+        {globalStyles}
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 animate-gradient-x flex flex-col items-center justify-center p-4">
+          <h1 className="text-3xl sm:text-4xl font-black text-blue-900 mb-2 text-center animate-fade-in-up tracking-tight">Thiết lập tài khoản</h1>
+          <p className="text-gray-600 mb-10 animate-fade-in-up text-center" style={{ animationDelay: '0.1s' }}>Xin chào <span className="font-bold text-gray-800">{user?.email}</span>. Vui lòng chọn vai trò của bạn.</p>
+          
+          <div className="flex flex-col sm:flex-row gap-6">
+            <button 
+              onClick={() => handleSelectRole('teacher')}
+              className="bg-white p-8 rounded-3xl shadow-xl border-2 border-transparent hover:border-blue-500 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group w-64 sm:w-72 flex flex-col items-center animate-fade-in-up"
+              style={{ animationDelay: '0.2s' }}
+            >
+              <div className="bg-blue-50 p-6 rounded-full mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-110 transition-all duration-500 text-blue-600 shadow-inner">
+                <UserCircle size={48} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">Giảng Viên</h2>
+              <p className="text-sm text-gray-500 mt-3 text-center leading-relaxed">Tạo đề thi, thiết kế câu hỏi và quản lý điểm số của sinh viên.</p>
+            </button>
 
-          <button 
-            onClick={() => handleSelectRole('student')}
-            className="bg-white p-8 rounded-2xl shadow-lg border-2 border-transparent hover:border-green-500 transition-all group w-64 flex flex-col items-center"
-          >
-            <div className="bg-green-100 p-4 rounded-full mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors text-green-600">
-              <GraduationCap size={48} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-800">Sinh Viên</h2>
-            <p className="text-sm text-gray-500 mt-2 text-center">Xem danh sách vòng thi và làm bài trực tuyến.</p>
-          </button>
+            <button 
+              onClick={() => handleSelectRole('student')}
+              className="bg-white p-8 rounded-3xl shadow-xl border-2 border-transparent hover:border-green-500 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group w-64 sm:w-72 flex flex-col items-center animate-fade-in-up"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="bg-green-50 p-6 rounded-full mb-6 group-hover:bg-green-600 group-hover:text-white group-hover:scale-110 transition-all duration-500 text-green-600 shadow-inner">
+                <GraduationCap size={48} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-800">Sinh Viên</h2>
+              <p className="text-sm text-gray-500 mt-3 text-center leading-relaxed">Xem danh sách các vòng thi và tham gia làm bài thi trực tuyến.</p>
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (currentView === 'dashboard') {
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm mb-6 border border-gray-100 gap-4">
-            <div className="flex items-center gap-3">
-              {currentRole === 'teacher' ? <UserCircle size={40} className="text-blue-600" /> : <GraduationCap size={40} className="text-green-600" />}
-              <div>
-                <span className="font-bold text-gray-800 block text-lg">
-                  {currentRole === 'teacher' ? 'Bảng Điều Khiển Giảng Viên' : 'Trang Thi Sinh Viên'}
-                </span>
-                <span className="text-sm text-gray-500 flex items-center gap-1">
-                  <Mail size={14}/> {user?.email}
-                </span>
+      <>
+        {globalStyles}
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl shadow-sm mb-8 border border-gray-100 gap-4 animate-fade-in-up">
+              <div className="flex items-center gap-4">
+                {currentRole === 'teacher' ? <UserCircle size={48} className="text-blue-600 bg-blue-50 p-2 rounded-full" /> : <GraduationCap size={48} className="text-green-600 bg-green-50 p-2 rounded-full" />}
+                <div>
+                  <span className="font-bold text-gray-800 block text-lg tracking-tight">
+                    {currentRole === 'teacher' ? 'Bảng Điều Khiển Giảng Viên' : 'Trang Thi Sinh Viên'}
+                  </span>
+                  <span className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5 font-medium">
+                    <Mail size={14}/> {user?.email}
+                  </span>
+                </div>
               </div>
+              <button 
+                onClick={handleLogout} 
+                className="text-sm px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 font-bold transition-all duration-300 w-full sm:w-auto"
+              >
+                Đăng xuất
+              </button>
             </div>
-            <button 
-              onClick={handleLogout} 
-              className="text-sm px-4 py-2 rounded border border-gray-300 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 font-semibold transition"
-            >
-              Đăng xuất
-            </button>
-          </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h2 className="text-2xl font-bold text-gray-800">Danh sách đề thi</h2>
-            {currentRole === 'teacher' && (
-              <div className="flex gap-2 flex-wrap w-full sm:w-auto">
-                <button 
-                  onClick={handleExportQuizzes}
-                  className="bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors border border-gray-300 shadow-sm text-sm"
-                  title="Tải toàn bộ đề thi của bạn về máy tính"
-                >
-                  <Download size={16} /> Xuất
-                </button>
-                
-                <label className="bg-white hover:bg-gray-50 text-gray-700 px-3 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors border border-gray-300 shadow-sm cursor-pointer text-sm" title="Khôi phục đề thi từ file .json">
-                  <Upload size={16} /> Nhập
-                  <input type="file" accept=".json" onChange={handleImportQuizzes} className="hidden" />
-                </label>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <h2 className="text-2xl font-black text-gray-800 tracking-tight">Danh sách đề thi</h2>
+              {currentRole === 'teacher' && (
+                <div className="flex gap-3 flex-wrap w-full sm:w-auto">
+                  <button 
+                    onClick={handleExportQuizzes}
+                    className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-md active:scale-95 border border-gray-200 shadow-sm text-sm flex-1 sm:flex-none"
+                    title="Tải toàn bộ đề thi của bạn về máy tính"
+                  >
+                    <Download size={18} /> Xuất File
+                  </button>
+                  
+                  <label className="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-md active:scale-95 border border-gray-200 shadow-sm cursor-pointer text-sm flex-1 sm:flex-none" title="Khôi phục đề thi từ file .json">
+                    <Upload size={18} /> Nhập
+                    <input type="file" accept=".json" onChange={handleImportQuizzes} className="hidden" />
+                  </label>
 
-                <button 
-                  onClick={startCreatingQuiz}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors shadow-sm"
-                >
-                  <PlusCircle size={20} /> Tạo Mới
-                </button>
-              </div>
-            )}
-          </div>
+                  <button 
+                    onClick={startCreatingQuiz}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95 shadow-md shadow-blue-500/30 w-full sm:w-auto"
+                  >
+                    <PlusCircle size={20} /> Tạo Mới
+                  </button>
+                </div>
+              )}
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {quizzes.length === 0 ? (
-              <div className="col-span-full text-center p-12 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100">
-                <BookOpen className="mx-auto text-gray-300 mb-3" size={48} />
-                <p>Hệ thống hiện tại chưa có đề thi nào.</p>
-                {currentRole === 'teacher' && <p className="text-sm mt-2 text-blue-600">Hãy nhấn "Tạo Mới" để bắt đầu thiết kế bài tập!</p>}
-              </div>
-            ) : (
-              quizzes.map((quiz, idx) => {
-                const normalQuestions = quiz.questions?.filter(q => !q.isPassageOnly) || [];
-                return (
-                  <div key={quiz.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between relative group hover:shadow-md transition">
-                    {currentRole === 'teacher' && quiz.teacherId === user?.uid && (
-                      <button 
-                        onClick={() => { if(window.confirm('Bạn có chắc chắn muốn xóa đề thi này khỏi hệ thống?')) handleDeleteQuiz(quiz.id); }}
-                        className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors bg-white rounded-full p-1 z-10"
-                        title="Xóa đề thi"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    )}
-                    <div className="mb-6">
-                      <div className="text-xs font-bold text-blue-600 mb-1 tracking-wider uppercase">Vòng thi số {quizzes.length - idx}</div>
-                      <h3 className="text-xl font-bold text-gray-800 mb-2 pr-8 line-clamp-2">{quiz.title}</h3>
-                      <div className="flex flex-col gap-1 mt-3">
-                        <p className="text-gray-500 text-sm flex items-center gap-2">
-                          <BookOpen size={16} /> Bao gồm {normalQuestions.length} câu hỏi
-                        </p>
-                        {currentRole === 'teacher' && quiz.teacherId === user?.uid && (
-                          <p className="text-gray-500 text-sm flex items-center gap-2">
-                            <Users size={16} /> Lượt nộp bài: <span className="font-bold text-blue-600">{results.filter(r => r.quizId === quiz.id).length}</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {quizzes.length === 0 ? (
+                <div className="col-span-full text-center p-12 text-gray-500 bg-white rounded-3xl shadow-sm border border-gray-100 animate-pop-in" style={{ animationDelay: '0.2s' }}>
+                  <BookOpen className="mx-auto text-gray-300 mb-4" size={56} />
+                  <p className="text-lg font-medium">Hệ thống hiện tại chưa có đề thi nào.</p>
+                  {currentRole === 'teacher' && <p className="text-sm mt-2 text-blue-600 font-bold">Hãy nhấn "Tạo Mới" để bắt đầu thiết kế bài tập!</p>}
+                </div>
+              ) : (
+                quizzes.map((quiz, idx) => {
+                  const normalQuestions = quiz.questions?.filter(q => !q.isPassageOnly) || [];
+                  return (
+                    <div 
+                      key={quiz.id} 
+                      className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between relative group hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 animate-fade-in-up"
+                      style={{ animationDelay: `${(idx % 10) * 0.05 + 0.1}s` }}
+                    >
+                      {currentRole === 'teacher' && quiz.teacherId === user?.uid && (
+                        <button 
+                          onClick={() => { if(window.confirm('Bạn có chắc chắn muốn xóa đề thi này khỏi hệ thống?')) handleDeleteQuiz(quiz.id); }}
+                          className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition-colors bg-white rounded-full p-2 z-10 hover:bg-red-50"
+                          title="Xóa đề thi"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
+                      <div className="mb-6">
+                        <div className="text-xs font-black text-blue-600 mb-2 tracking-widest uppercase opacity-80">Vòng thi số {quizzes.length - idx}</div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-3 pr-8 leading-snug">{quiz.title}</h3>
+                        <div className="flex flex-col gap-1.5 mt-4">
+                          <p className="text-gray-600 text-sm flex items-center gap-2 font-medium">
+                            <BookOpen size={16} className="text-gray-400" /> Bao gồm {normalQuestions.length} câu hỏi
                           </p>
-                        )}
-                        {currentRole === 'student' && quiz.teacherEmail && (
-                          <p className="text-gray-400 text-xs flex items-center gap-2">
-                            <UserCircle size={14} /> GV: {quiz.teacherEmail}
-                          </p>
-                        )}
+                          {currentRole === 'teacher' && quiz.teacherId === user?.uid && (
+                            <p className="text-gray-600 text-sm flex items-center gap-2 font-medium">
+                              <Users size={16} className="text-blue-400" /> Lượt nộp bài: <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{results.filter(r => r.quizId === quiz.id).length}</span>
+                            </p>
+                          )}
+                          {currentRole === 'student' && quiz.teacherEmail && (
+                            <p className="text-gray-500 text-xs flex items-center gap-2 font-medium">
+                              <UserCircle size={14} className="text-gray-400" /> GV: {quiz.teacherEmail}
+                            </p>
+                          )}
+                        </div>
                       </div>
+                      
+                      {currentRole === 'student' ? (
+                        <button 
+                          onClick={() => startQuiz(quiz)}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white py-3.5 rounded-xl font-bold flex justify-center items-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 group-hover:bg-green-600"
+                        >
+                          <PlayCircle size={20} className="group-hover:scale-110 transition-transform" /> Bắt Đầu Làm Bài
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            setSelectedQuizForResults(quiz);
+                            setCurrentView('quiz-results');
+                          }}
+                          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-3.5 rounded-xl font-bold flex justify-center items-center gap-2 transition-all duration-300 shadow-sm border border-blue-200 hover:-translate-y-0.5 active:scale-95"
+                        >
+                          <BarChart2 size={20} /> Xem Kết Quả Sinh Viên
+                        </button>
+                      )}
                     </div>
-                    
-                    {currentRole === 'student' ? (
-                      <button 
-                        onClick={() => startQuiz(quiz)}
-                        className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold flex justify-center items-center gap-2 transition-colors shadow-sm"
-                      >
-                        <PlayCircle size={20} /> Bắt Đầu Làm Bài
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={() => {
-                          setSelectedQuizForResults(quiz);
-                          setCurrentView('quiz-results');
-                        }}
-                        className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 py-3 rounded-lg font-bold flex justify-center items-center gap-2 transition-colors shadow-sm border border-blue-200"
-                      >
-                        <BarChart2 size={20} /> Xem Kết Quả Sinh Viên
-                      </button>
-                    )}
-                  </div>
-                );
-              })
-            )}
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -1104,159 +1134,165 @@ export default function App() {
       });
     }
 
-    let questionCounter = 0; // Để sinh viên xem đúng số thứ tự
+    let questionCounter = 0;
 
     return (
-      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
-        <div className="max-w-3xl mx-auto">
-          
-          <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-6 sticky top-4 z-10 border-t-4 border-green-500 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">{activeQuiz.title}</h2>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2 mb-1">
-                <div className="bg-green-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${(answeredCount / (totalQ || 1)) * 100}%` }}></div>
+      <>
+        {globalStyles}
+        <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+          <div className="max-w-3xl mx-auto">
+            
+            <div className="bg-white rounded-2xl shadow-md p-5 sm:p-7 mb-8 sticky top-4 z-10 border-t-4 border-green-500 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
+              <div className="flex-grow w-full sm:w-auto pr-4">
+                <h2 className="text-xl font-bold text-gray-800">{activeQuiz.title}</h2>
+                <div className="w-full bg-gray-100 rounded-full h-3 mt-3 mb-1.5 overflow-hidden shadow-inner">
+                  <div className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-700 ease-out" style={{ width: `${(answeredCount / (totalQ || 1)) * 100}%` }}></div>
+                </div>
+                <p className="text-gray-500 text-xs font-semibold">Tiến độ: Đã trả lời {answeredCount}/{totalQ} câu</p>
               </div>
-              <p className="text-gray-500 text-xs font-medium">Tiến độ: Đã trả lời {answeredCount}/{totalQ} câu</p>
+              {!isQuizFinished ? (
+                 <button 
+                  onClick={finishQuiz}
+                  disabled={answeredCount < totalQ}
+                  className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold transition-all duration-300 flex-shrink-0 ${answeredCount === totalQ && totalQ > 0 ? 'bg-green-600 text-white shadow-lg shadow-green-500/30 hover:bg-green-700 hover:-translate-y-1 active:scale-95' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+                >
+                  Nộp Bài
+                </button>
+              ) : (
+                <button 
+                  onClick={() => setCurrentView('dashboard')}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex justify-center items-center gap-2 transition-all shadow-md hover:-translate-y-1 active:scale-95 flex-shrink-0"
+                >
+                  <ArrowLeft size={18}/> Về Trang Chủ
+                </button>
+              )}
             </div>
-            {!isQuizFinished ? (
-               <button 
-                onClick={finishQuiz}
-                disabled={answeredCount < totalQ}
-                className={`w-full sm:w-auto px-6 py-2.5 rounded-lg font-bold transition-all ${answeredCount === totalQ && totalQ > 0 ? 'bg-green-600 text-white shadow-md hover:bg-green-700' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
-              >
-                Nộp Bài
-              </button>
-            ) : (
-              <button 
-                onClick={() => setCurrentView('dashboard')}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold flex justify-center items-center gap-2 transition"
-              >
-                <ArrowLeft size={18}/> Về Trang Chủ
-              </button>
+
+            {isQuizFinished && (
+              <div className="bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 rounded-3xl p-8 mb-8 text-center animate-pop-in shadow-xl">
+                <h3 className="text-2xl sm:text-3xl font-black text-green-900 mb-3 tracking-tight">Chúc mừng bạn đã hoàn thành bài thi!</h3>
+                <p className="text-lg text-green-800 font-medium">
+                  Điểm số của bạn: <span className="text-5xl font-black text-green-600 mx-2 drop-shadow-sm">{correctCount}/{totalQ}</span> câu đúng.
+                </p>
+              </div>
             )}
-          </div>
 
-          {isQuizFinished && (
-            <div className="bg-green-50 border-2 border-green-200 rounded-xl p-8 mb-8 text-center animate-fade-in-up">
-              <h3 className="text-2xl sm:text-3xl font-bold text-green-900 mb-2">Chúc mừng bạn đã hoàn thành bài thi!</h3>
-              <p className="text-lg text-green-800">
-                Điểm số của bạn: <span className="text-4xl font-black text-green-600 mx-2">{correctCount}/{totalQ}</span> câu đúng.
-              </p>
-            </div>
-          )}
+            <div className="space-y-6">
+              {activeQuiz.questions?.map((q, index) => {
+                if (q.isPassageOnly) {
+                  return (
+                    <div key={q.id} className="bg-blue-50 rounded-2xl shadow-md border-l-4 border-blue-500 p-5 sm:p-8 mb-6 animate-fade-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <div className="flex items-center gap-2 mb-4 text-blue-800 font-black uppercase tracking-widest text-sm opacity-80">
+                        <FileText size={18}/> Ngữ cảnh / Bài đọc
+                      </div>
+                      {q.text && <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-lg font-medium">{q.text}</p>}
+                      {q.image && <img src={q.image} alt="Bài đọc" className="mt-5 w-full rounded-xl shadow-sm border border-blue-200 object-contain bg-white" />}
+                    </div>
+                  );
+                }
 
-          <div className="space-y-6">
-            {activeQuiz.questions?.map((q, index) => {
-              if (q.isPassageOnly) {
+                questionCounter++;
+                const selectedAns = studentAnswers[q.id];
+                const isAnswered = q.type === 'fill-blank' ? isQuizFinished : !!selectedAns;
+                
+                let isCorrect = false;
+                if (q.type === 'fill-blank') {
+                  isCorrect = selectedAns?.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
+                } else {
+                  isCorrect = selectedAns === q.correctAnswer;
+                }
+
                 return (
-                  <div key={q.id} className="bg-blue-50 rounded-xl shadow-sm border-l-4 border-blue-500 p-5 sm:p-8 mb-6">
-                    <div className="flex items-center gap-2 mb-3 text-blue-800 font-bold uppercase tracking-wider text-sm">
-                      <FileText size={18}/> Ngữ cảnh / Bài đọc
-                    </div>
-                    {q.text && <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-lg">{q.text}</p>}
-                    {q.image && <img src={q.image} alt="Bài đọc" className="mt-4 w-full rounded-lg shadow-sm border border-blue-200 object-contain bg-white" />}
-                  </div>
-                );
-              }
-
-              questionCounter++;
-              const selectedAns = studentAnswers[q.id];
-              // Đối với câu trắc nghiệm, nếu đã ấn chọn thì là đã trả lời. Đối với điền từ thì không giới hạn cho đến khi Nộp bài.
-              const isAnswered = q.type === 'fill-blank' ? isQuizFinished : !!selectedAns;
-              
-              let isCorrect = false;
-              if (q.type === 'fill-blank') {
-                isCorrect = selectedAns?.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
-              } else {
-                isCorrect = selectedAns === q.correctAnswer;
-              }
-
-              return (
-                <div key={q.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-2">
-                    <div className="flex-grow">
-                      <h3 className="font-bold text-gray-800 text-lg leading-relaxed">
-                        <span className="text-green-600 mr-2">Câu {questionCounter}:</span>
-                        {q.text}
-                      </h3>
-                      {q.image && (
-                        <img src={q.image} alt="Ảnh câu hỏi" className="mt-4 max-h-72 rounded-lg shadow-sm border border-gray-200 object-contain bg-gray-50" />
-                      )}
-                    </div>
-                    
-                    {isQuizFinished && (
-                       <span className={`flex-shrink-0 flex items-center text-sm font-bold px-3 py-1 rounded-full ${!selectedAns || selectedAns.trim() === '' ? 'bg-gray-100 text-gray-500' : isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                         {!selectedAns || selectedAns.trim() === '' ? 'Bỏ trống' : isCorrect ? <><CheckCircle2 size={16} className="mr-1"/> Chính xác</> : <><XCircle size={16} className="mr-1"/> Sai</>}
-                       </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-3 mt-4">
-                    {q.type === 'fill-blank' ? (
-                      <div className="mt-2">
-                        <input 
-                          type="text" 
-                          disabled={isQuizFinished}
-                          placeholder="Gõ đáp án của bạn vào đây..."
-                          className={`w-full p-4 text-lg border-2 rounded-xl outline-none transition font-bold ${isQuizFinished ? (isCorrect ? 'border-green-500 bg-green-50 text-green-900' : 'border-red-500 bg-red-50 text-red-900') : 'border-gray-300 focus:border-blue-500 text-gray-800'}`}
-                          value={selectedAns || ''}
-                          onChange={(e) => handleSelectAnswer(q.id, e.target.value, true)}
-                        />
-                        {isQuizFinished && !isCorrect && (
-                          <div className="mt-3 p-3 bg-green-50 text-green-800 border border-green-200 rounded-lg text-sm flex items-center gap-2">
-                            <span className="font-bold">Đáp án đúng là:</span> <span className="text-lg font-black">{q.correctAnswer}</span>
-                          </div>
+                  <div key={q.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 p-5 sm:p-7 animate-fade-in-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                    <div className="flex flex-col sm:flex-row justify-between items-start mb-5 gap-3">
+                      <div className="flex-grow w-full">
+                        <h3 className="font-bold text-gray-800 text-lg leading-relaxed">
+                          <span className="text-green-600 mr-2 font-black">Câu {questionCounter}:</span>
+                          {q.text}
+                        </h3>
+                        {q.image && (
+                          <img src={q.image} alt="Ảnh câu hỏi" className="mt-4 max-h-72 rounded-xl shadow-sm border border-gray-200 object-contain bg-gray-50" />
                         )}
                       </div>
-                    ) : (
-                      q.options.map(opt => {
-                        let btnStyle = "border-gray-200 hover:bg-gray-50 hover:border-gray-300";
-                        let icon = null;
+                      
+                      {isQuizFinished && (
+                         <span className={`flex-shrink-0 flex items-center text-sm font-bold px-3.5 py-1.5 rounded-full shadow-sm ${!selectedAns || selectedAns.trim() === '' ? 'bg-gray-100 text-gray-500 border border-gray-200' : isCorrect ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`}>
+                           {!selectedAns || selectedAns.trim() === '' ? 'Bỏ trống' : isCorrect ? <><CheckCircle2 size={16} className="mr-1.5"/> Chính xác</> : <><XCircle size={16} className="mr-1.5"/> Sai</>}
+                         </span>
+                      )}
+                    </div>
 
-                        if (isQuizFinished || selectedAns) {
-                          if (opt.id === q.correctAnswer && isQuizFinished) {
-                            btnStyle = "border-green-500 bg-green-50 text-green-900 ring-2 ring-green-500 shadow-sm";
-                            icon = <CheckCircle2 className="text-green-600 flex-shrink-0" size={22} />;
-                          } else if (opt.id === selectedAns) {
-                            if (!isQuizFinished) {
-                               btnStyle = "border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-500";
-                            } else if (!isCorrect) {
-                               btnStyle = "border-red-500 bg-red-50 text-red-900 opacity-90";
-                               icon = <XCircle className="text-red-500 flex-shrink-0" size={22} />;
-                            }
-                          } else {
-                            btnStyle = "border-gray-100 bg-gray-50 text-gray-400 opacity-50";
-                          }
-                        }
-
-                        return (
-                          <button
-                            key={opt.id}
-                            disabled={isAnswered || isQuizFinished}
-                            onClick={() => handleSelectAnswer(q.id, opt.id)}
-                            className={`w-full text-left p-4 rounded-xl border-2 flex justify-between items-center transition-all duration-200 ${!isQuizFinished && !isAnswered ? 'cursor-pointer hover:shadow-sm transform hover:-translate-y-0.5' : 'cursor-default'} ${btnStyle}`}
-                          >
-                            <div className="flex flex-col flex-grow pr-4">
-                              <div className="flex items-start">
-                                <span className="font-bold w-8 flex-shrink-0 mt-0.5">{opt.id}.</span>
-                                <span className="leading-snug">{opt.text}</span>
+                    <div className="space-y-3 mt-5">
+                      {q.type === 'fill-blank' ? (
+                        <div className="mt-2 relative">
+                          <input 
+                            type="text" 
+                            disabled={isQuizFinished}
+                            placeholder="Gõ đáp án của bạn vào đây..."
+                            className={`w-full p-4 text-lg border-2 rounded-xl outline-none transition-all duration-300 font-bold focus:shadow-md ${isQuizFinished ? (isCorrect ? 'border-green-500 bg-green-50 text-green-900' : 'border-red-500 bg-red-50 text-red-900') : 'border-gray-300 focus:border-blue-500 focus:-translate-y-1 text-gray-800'}`}
+                            value={selectedAns || ''}
+                            onChange={(e) => handleSelectAnswer(q.id, e.target.value, true)}
+                          />
+                          {isQuizFinished && !isCorrect && (
+                            <div className="mt-4 p-4 bg-green-50 text-green-800 border border-green-200 rounded-xl text-sm flex items-center gap-3 animate-pop-in">
+                              <CheckCircle2 size={24} className="text-green-600 flex-shrink-0" />
+                              <div>
+                                <span className="font-semibold text-green-700 block text-xs uppercase tracking-wider mb-0.5">Đáp án đúng</span> 
+                                <span className="text-xl font-black">{q.correctAnswer}</span>
                               </div>
-                              {opt.image && (
-                                <img src={opt.image} alt={`Ảnh đáp án ${opt.id}`} className="mt-3 ml-8 max-h-32 rounded border border-gray-200 object-contain self-start bg-white shadow-sm" />
-                              )}
                             </div>
-                            {icon}
-                          </button>
-                        );
-                      })
-                    )}
+                          )}
+                        </div>
+                      ) : (
+                        q.options.map(opt => {
+                          let btnStyle = "border-gray-200 hover:bg-gray-50 hover:border-gray-300";
+                          let icon = null;
+
+                          if (isQuizFinished || selectedAns) {
+                            if (opt.id === q.correctAnswer && isQuizFinished) {
+                              btnStyle = "border-green-500 bg-green-50 text-green-900 ring-2 ring-green-500 shadow-md";
+                              icon = <CheckCircle2 className="text-green-600 flex-shrink-0" size={24} />;
+                            } else if (opt.id === selectedAns) {
+                              if (!isQuizFinished) {
+                                 btnStyle = "border-blue-500 bg-blue-50 text-blue-900 ring-2 ring-blue-500 shadow-md";
+                              } else if (!isCorrect) {
+                                 btnStyle = "border-red-500 bg-red-50 text-red-900 opacity-90 shadow-sm";
+                                 icon = <XCircle className="text-red-500 flex-shrink-0" size={24} />;
+                              }
+                            } else {
+                              btnStyle = "border-gray-100 bg-gray-50 text-gray-400 opacity-50";
+                            }
+                          }
+
+                          return (
+                            <button
+                              key={opt.id}
+                              disabled={isAnswered || isQuizFinished}
+                              onClick={() => handleSelectAnswer(q.id, opt.id)}
+                              className={`w-full text-left p-4 rounded-xl border-2 flex justify-between items-center transition-all duration-300 ${!isQuizFinished && !isAnswered ? 'cursor-pointer hover:shadow-md transform hover:-translate-y-1 hover:border-blue-400' : 'cursor-default'} ${btnStyle}`}
+                            >
+                              <div className="flex flex-col flex-grow pr-4 text-gray-700">
+                                <div className="flex items-start">
+                                  <span className="font-bold w-8 flex-shrink-0 mt-0.5">{opt.id}.</span>
+                                  <span className="leading-snug">{opt.text}</span>
+                                </div>
+                                {opt.image && (
+                                  <img src={opt.image} alt={`Ảnh đáp án ${opt.id}`} className="mt-3 ml-8 max-h-32 rounded border border-gray-200 object-contain self-start bg-white shadow-sm" />
+                                )}
+                              </div>
+                              {icon}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
